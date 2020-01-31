@@ -107,7 +107,6 @@ class FargateSpawner(Spawner):
     notebook_port = Int(config=True)
     notebook_scheme = Unicode(config=True)
     notebook_args = List(trait=Unicode, config=True)
-    public_connect_url = Unicode(config=True)
 
     authentication_class = Type(FargateSpawnerAuthentication, config=True)
     authentication = Instance(FargateSpawnerAuthentication)
