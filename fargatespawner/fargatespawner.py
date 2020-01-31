@@ -107,6 +107,7 @@ class FargateSpawner(Spawner):
     notebook_port = Int(config=True)
     notebook_scheme = Unicode(config=True)
     notebook_args = List(trait=Unicode, config=True)
+    public_connect_url = Unicode(config=True)
 
     authentication_class = Type(FargateSpawnerAuthentication, config=True)
     authentication = Instance(FargateSpawnerAuthentication)
@@ -287,10 +288,23 @@ async def _describe_task(logger, aws_endpoint, task_cluster_name, task_arn):
     return task
 
 
+def _get_env(task_env):
+    env = []
+    for name, value in task_env.items():
+        if name in ('JUPYTERHUB_ACTIVITY_URL', 'JUPYTERHUB_API_URL'):
+            value = value.replace('http://jupyterhub:8080/', 'https://data-dev.aplazame.com/')
+        env.append({
+            'name': name,
+            'value': value,
+        }
+    return env
+
+
 async def _run_task(logger, aws_endpoint,
                     task_role_arn,
                     task_cluster_name, task_container_name, task_definition_arn, task_security_groups, task_subnets,
                     task_command_and_args, task_env):
+
     return await _make_ecs_request(logger, aws_endpoint, 'RunTask', {
         'cluster': task_cluster_name,
         'taskDefinition': task_definition_arn,
@@ -298,12 +312,7 @@ async def _run_task(logger, aws_endpoint,
             'taskRoleArn': task_role_arn,
             'containerOverrides': [{
                 'command': task_command_and_args,
-                'environment': [
-                    {
-                        'name': name,
-                        'value': value,
-                    } for name, value in task_env.items()
-                ],
+                'environment': _get_env(task_env),
                 'name': task_container_name,
             }],
         },
