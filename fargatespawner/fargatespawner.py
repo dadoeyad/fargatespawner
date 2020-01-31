@@ -311,7 +311,7 @@ async def _run_task(logger, aws_endpoint,
         'launchType': 'FARGATE',
         'networkConfiguration': {
             'awsvpcConfiguration': {
-                'assignPublicIp': 'DISABLED',
+                'assignPublicIp': 'ENABLED',
                 'securityGroups': task_security_groups,
                 'subnets': task_subnets,
             },
